@@ -1,5 +1,47 @@
-target/
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin
+
+#generated code
+**/generatedsources/*
+**/target/*
+
+# editor and IDE paraphernalia
+.idea
+*.swp
+*.swo
+*~
+.vscode
+.history
+.netrc
+
+.log
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history
+
+
+# Local development
+.env
+__debug_bin
+
+pipeline/custom_*
+pipeline/custom-pipeline.yaml
+java/.factorypath
+java/.project
+java/.classpath
+java/.settings/
+.project
+.factorypath
+.settings
+.classpath
 .openapi-generator/
-.vscode/
-src/main/resources/application.properties
-src/main/resources/openapi.yaml
+
