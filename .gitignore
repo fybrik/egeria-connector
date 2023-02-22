@@ -1,5 +1,4 @@
 target/
-.openapi-generator-ignore
 .openapi-generator/
 .vscode/
 src/main/resources/application.properties
