@@ -33,11 +33,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.Optional;
+
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 @Controller
 @RequestMapping("${openapi.dataCatalogServiceAssetDetails.base-path:}")
 public class GetAssetInfoApiController implements GetAssetInfoApi {
   private static final Logger LOGGER = LoggerFactory.getLogger(GetAssetInfoApiController.class.getName());
+
+  private final NativeWebRequest request;
+
+  @org.springframework.beans.factory.annotation.Autowired
+  public GetAssetInfoApiController(NativeWebRequest request) {
+    this.request = request;
+  }
+
+  @Override
+  public Optional < NativeWebRequest > getRequest() {
+    return Optional.ofNullable(request);
+  }
 
   public ResponseEntity < GetAssetResponse > getAssetInfo(
     @Parameter(description = "", required = true) @RequestHeader(value = "X-Request-Datacatalog-Cred", required = true) String xRequestDatacatalogCred,
@@ -101,20 +115,15 @@ public class GetAssetInfoApiController implements GetAssetInfoApi {
       return new ResponseEntity < > (HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    try {
-      LOGGER.info("jsonString: {}", jsonString);
-      ResponseEntity < GetAssetResponse > response1 = ResponseEntity.accepted()
-        // .headers(headers)
-        .body(response);
-      String jsonString1 = mapper.writeValueAsString(response1);
-      LOGGER.info("jsonString of response1 in getAssetInfo: {}", jsonString1);
-      LOGGER.info("ResponseEntity in getAssetInfo - tostring: {}", response1);
-      return response1;
-    } catch (Exception e) {
-      e.printStackTrace();
-      LOGGER.info("Error during sending response in handleRequest in getAssetInfo!: {}", response);
-      return new ResponseEntity < > (HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    getRequest().ifPresent(request -> {
+      for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+        if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+          ApiUtil.setExampleResponse(request, "application/json", jsonString);
+          break;
+        }
+      }
+    });
 
+    return new ResponseEntity < > (HttpStatus.OK);
   }
 }
