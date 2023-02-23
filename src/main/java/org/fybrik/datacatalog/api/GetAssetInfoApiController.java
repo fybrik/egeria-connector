@@ -49,13 +49,13 @@ public class GetAssetInfoApiController implements GetAssetInfoApi {
   }
 
   @Override
-  public Optional < NativeWebRequest > getRequest() {
+  public Optional<NativeWebRequest> getRequest() {
     return Optional.ofNullable(request);
   }
 
-  public ResponseEntity < GetAssetResponse > getAssetInfo(
-    @Parameter(description = "", required = true) @RequestHeader(value = "X-Request-Datacatalog-Cred", required = true) String xRequestDatacatalogCred,
-    @Parameter(description = "Data Catalog Request Object.", required = true) @Valid @RequestBody GetAssetRequest getAssetRequest) {
+  public ResponseEntity<GetAssetResponse> getAssetInfo(
+      @Parameter(description = "", required = true) @RequestHeader(value = "X-Request-Datacatalog-Cred", required = true) String xRequestDatacatalogCred,
+      @Parameter(description = "Data Catalog Request Object.", required = true) @Valid @RequestBody GetAssetRequest getAssetRequest) {
     LOGGER.info("Received request in getAssetInfo");
 
     GetAssetResponse response = new GetAssetResponse();
@@ -80,12 +80,12 @@ public class GetAssetInfoApiController implements GetAssetInfoApi {
 
     rm.setName("Synthetic Financial Datasets For Fraud Detection");
     rm.setGeography("theshire");
-    Map < String, Object > tags = new HashMap < String, Object > ();
+    Map<String, Object> tags = new HashMap<String, Object>();
     tags.put("Purpose.finance", "true");
     rm.setTags(tags);
 
-    List < ResourceColumn > columns = new ArrayList < ResourceColumn > ();
-    Map < String, Object > columnTags = new HashMap < String, Object > ();
+    List<ResourceColumn> columns = new ArrayList<ResourceColumn>();
+    Map<String, Object> columnTags = new HashMap<String, Object>();
     columnTags.put("PII.Sensitive", "true");
     ResourceColumn rc1 = new ResourceColumn();
     ResourceColumn rc2 = new ResourceColumn();
@@ -112,11 +112,11 @@ public class GetAssetInfoApiController implements GetAssetInfoApi {
       jsonString = mapper.writeValueAsString(response);
     } catch (Exception e) {
       e.printStackTrace();
-      return new ResponseEntity < > (HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     getRequest().ifPresent(request -> {
-      for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+      for (MediaType mediaType : MediaType.parseMediaTypes(request.getHeader("Accept"))) {
         if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
           ApiUtil.setExampleResponse(request, "application/json", jsonString);
           break;
@@ -124,6 +124,6 @@ public class GetAssetInfoApiController implements GetAssetInfoApi {
       }
     });
 
-    return new ResponseEntity < > (HttpStatus.OK);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 }
