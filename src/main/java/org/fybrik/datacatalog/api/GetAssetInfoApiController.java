@@ -1,129 +1,90 @@
 package org.fybrik.datacatalog.api;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.context.request.NativeWebRequest;
-
-import org.springframework.web.bind.annotation.*;
-import javax.validation.Valid;
-
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.fybrik.datacatalog.model.GetAssetRequest;
 import org.fybrik.datacatalog.model.GetAssetResponse;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
-
-import io.swagger.v3.oas.annotations.Parameter;
-
-import org.springframework.http.MediaType;
-
-import org.slf4j.LoggerFactory;
+import org.odpi.openmetadata.egeria.client.EgeriaClient;
+import org.odpi.openmetadata.frameworks.connectors.ffdc.InvalidParameterException;
+import org.odpi.openmetadata.frameworks.connectors.ffdc.PropertyServerException;
+import org.odpi.openmetadata.frameworks.connectors.ffdc.UserNotAuthorizedException;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.NativeWebRequest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import org.fybrik.datacatalog.model.Connection;
-import org.fybrik.datacatalog.model.ResourceColumn;
-import org.fybrik.datacatalog.model.ResourceDetails;
-import org.fybrik.datacatalog.model.ResourceMetadata;
-import org.fybrik.datacatalog.model.S3;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import javax.validation.Valid;
 import java.util.Optional;
 
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.SpringCodegen")
 @Controller
 @RequestMapping("${openapi.dataCatalogServiceAssetDetails.base-path:}")
 public class GetAssetInfoApiController implements GetAssetInfoApi {
-  private static final Logger LOGGER = LoggerFactory.getLogger(GetAssetInfoApiController.class.getName());
 
-  private final NativeWebRequest request;
+    private static final String SERVER_NAME = "omas-server";
+    private static final String SERVER_PLATFORM_URL_ROOT = "https://localhost:8081/";
+    private static final String USER_ID = "admin";
 
-  @org.springframework.beans.factory.annotation.Autowired
-  public GetAssetInfoApiController(NativeWebRequest request) {
-    this.request = request;
-  }
+    private static final Logger LOGGER = LoggerFactory.getLogger(GetAssetInfoApiController.class.getName());
 
-  @Override
-  public Optional<NativeWebRequest> getRequest() {
-    return Optional.ofNullable(request);
-  }
+    private final NativeWebRequest request;
 
-  public ResponseEntity<GetAssetResponse> getAssetInfo(
-      @Parameter(description = "", required = true) @RequestHeader(value = "X-Request-Datacatalog-Cred", required = true) String xRequestDatacatalogCred,
-      @Parameter(description = "Data Catalog Request Object.", required = true) @Valid @RequestBody GetAssetRequest getAssetRequest) {
-    LOGGER.info("Received request in getAssetInfo");
-
-    GetAssetResponse response = new GetAssetResponse();
-    ResourceDetails rd = new ResourceDetails();
-    ResourceMetadata rm = new ResourceMetadata();
-
-    String credentials = "/v1/kubernetes-secrets/paysim-csv?namespace=fybrik-notebook-sample";
-
-    Connection c = new Connection();
-    S3 s3 = new S3();
-    s3.endpoint("http://localstack.fybrik-notebook-sample.svc.cluster.local:4566");
-    s3.bucket("demo");
-    s3.objectKey("PS_20174392719_1491204439457_log.csv");
-
-    c.setName("s3");
-    c.setS3(s3);
-
-    response.setCredentials(credentials);
-    rd.setDataFormat("csv");
-    rd.setConnection(c);
-    response.setDetails(rd);
-
-    rm.setName("Synthetic Financial Datasets For Fraud Detection");
-    rm.setGeography("theshire");
-    Map<String, Object> tags = new HashMap<String, Object>();
-    tags.put("Purpose.finance", "true");
-    rm.setTags(tags);
-
-    List<ResourceColumn> columns = new ArrayList<ResourceColumn>();
-    Map<String, Object> columnTags = new HashMap<String, Object>();
-    columnTags.put("PII.Sensitive", "true");
-    ResourceColumn rc1 = new ResourceColumn();
-    ResourceColumn rc2 = new ResourceColumn();
-    ResourceColumn rc3 = new ResourceColumn();
-    rc1.setName("nameOrig");
-    rc1.setTags(columnTags);
-    rc2.setName("oldbalanceOrg");
-    rc2.setTags(columnTags);
-    rc3.setName("newbalanceOrig");
-    rc3.setTags(columnTags);
-    columns.add(rc1);
-    columns.add(rc2);
-    columns.add(rc3);
-
-    rm.setColumns(columns);
-
-    response.setResourceMetadata(rm);
-
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.setSerializationInclusion(Include.NON_NULL);
-
-    String jsonString;
-    try {
-      jsonString = mapper.writeValueAsString(response);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    @org.springframework.beans.factory.annotation.Autowired
+    public GetAssetInfoApiController(NativeWebRequest request) {
+        this.request = request;
     }
 
-    getRequest().ifPresent(request -> {
-      for (MediaType mediaType : MediaType.parseMediaTypes(request.getHeader("Accept"))) {
-        if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
-          ApiUtil.setExampleResponse(request, "application/json", jsonString);
-          break;
-        }
-      }
-    });
+    @Override
+    public Optional<NativeWebRequest> getRequest() {
+        return Optional.ofNullable(request);
+    }
 
-    return new ResponseEntity<>(HttpStatus.OK);
-  }
+    @Override
+    public ResponseEntity<GetAssetResponse> getAssetInfo(
+            @Parameter(description = "", required = true) @RequestHeader(value = "X-Request-Datacatalog-Cred", required = true) String xRequestDatacatalogCred,
+            @Parameter(description = "Data Catalog Request Object.", required = true) @Valid @RequestBody GetAssetRequest getAssetRequest) {
+        LOGGER.info("Received request in getAssetInfo");
+
+        try {
+            EgeriaClient egeriaClient = new EgeriaClient(SERVER_NAME, SERVER_PLATFORM_URL_ROOT);
+            GetAssetResponse response = egeriaClient.getAssetResponse(USER_ID, getAssetRequest.getAssetID());
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.setSerializationInclusion(Include.NON_NULL);
+
+            String jsonString;
+            jsonString = mapper.writeValueAsString(response);
+
+            getRequest().ifPresent(request -> {
+                for (MediaType mediaType : MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                    if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                        ApiUtil.setExampleResponse(request, "application/json", jsonString);
+                        break;
+                    }
+                }
+            });
+
+            return new ResponseEntity<>(HttpStatus.OK);
+
+        } catch (InvalidParameterException e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (PropertyServerException e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (UserNotAuthorizedException e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        } catch (JsonProcessingException e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
