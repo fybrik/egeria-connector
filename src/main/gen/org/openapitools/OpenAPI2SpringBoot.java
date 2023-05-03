@@ -1,7 +1,6 @@
 package org.openapitools;
 
 import com.fasterxml.jackson.databind.Module;
-import org.odpi.openmetadata.http.HttpHelper;
 import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
